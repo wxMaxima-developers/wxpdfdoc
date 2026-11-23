@@ -369,6 +369,24 @@ TestTemplate()
   CHECK(Contains(doc.substr(form, formEnd - form), "/F2 "));
 }
 
+// Fallback also works in embed-all-fonts mode, where fallback fonts are
+// subject to the same embedding rules as the current font.
+// (Unicode TrueType fonts like Vera are always embedded, so this mainly
+// checks that both features work together.)
+static void
+TestEmbedAllFonts()
+{
+  TestDocument pdf;
+  pdf.SetEmbedAllFonts(true);
+  CHECK(pdf.SetFont(wxS("Helvetica"), wxS(""), 12));
+  CHECK(pdf.AddFallbackFont(wxS("Vera")));
+  pdf.Text(10, 20, wxS("x") + PI);
+  std::string doc = GetPdf(pdf);
+  CHECK(Contains(GetPageContent(doc), "(x) Tj /F2 12.00 Tf"));
+  CHECK(Contains(doc, "BitstreamVeraSans-Roman"));
+  CHECK(Contains(doc, "/FontFile2"));
+}
+
 // The fonts installed on the system are only searched if requested.
 static void
 TestSystemFallback()
@@ -424,6 +442,7 @@ main(int argc, char** argv)
   TestCombiningMark();
   TestKerningAndJustification();
   TestTemplate();
+  TestEmbedAllFonts();
   TestSystemFallback();
 
   std::printf("%d checks, %d failures\n", gs_checks, gs_failures);

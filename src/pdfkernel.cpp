@@ -146,6 +146,13 @@ wxPdfDocument::SelectFont(const wxString& family, int style, double size, bool s
   wxString fontFamily = (!family.IsEmpty()) ? family : (m_currentFont != NULL) ? m_currentFont->GetFontFamily() : wxString();
   bool selected = false;
   wxPdfFont regFont = wxPdfFontManager::GetFontManager()->GetFont(fontFamily, style);
+  if (!regFont.IsValid() && !fontFamily.IsEmpty() && (m_embedAllFonts || m_isPdfA1))
+  {
+    // The family is not registered (with this style). Since all fonts are
+    // embedded anyway, it may be located via the operating system - this
+    // is also needed to select other styles of a replacement font family.
+    regFont = FindEmbeddableFont(fontFamily, style);
+  }
   if (regFont.IsValid())
   {
     selected = SelectFont(regFont, style, size, setFont);
@@ -224,9 +231,11 @@ wxPdfDocument::SelectFont(const wxFont& font, bool setFont)
 }
 
 bool
-wxPdfDocument::SelectFont(const wxPdfFont& font, int style, double size, bool setFont)
+wxPdfDocument::SelectFont(const wxPdfFont& requestedFont, int style, double size, bool setFont)
 {
   bool selected = false;
+  // In embed-all-fonts mode a non-embeddable font is replaced here
+  const wxPdfFont font = GetFontToEmbed(requestedFont, style);
   if (font.IsValid())
   {
     m_decoration = style & wxPDF_FONTSTYLE_DECORATION_MASK;
@@ -2842,10 +2851,16 @@ IsCombiningMark(wxUint32 cp)
 int
 wxPdfDocument::FindFallbackSlot(wxUint32 codePoint, const wxString& chr)
 {
-  // The result only depends on the code point and on the style of the current
-  // font (bold text should fall back to a bold font), so cache it by these two.
+  // The result only depends on the code point, on the style of the current
+  // font (bold text should fall back to a bold font) and on whether all fonts
+  // have to be embedded, so cache it by these.
+  const bool embedAll = m_embedAllFonts || m_isPdfA1;
   int style = m_fontStyle & (wxPDF_FONTSTYLE_BOLDITALIC | wxPDF_FONTSTYLE_WEIGHT_MASK);
   wxUint64 cacheKey = (((wxUint64) (wxUint32) style) << 32) | codePoint;
+  if (embedAll)
+  {
+    cacheKey |= ((wxUint64) 1) << 62;
+  }
   std::map<wxUint64, int>::const_iterator cached = m_fontFallback->m_cache.find(cacheKey);
   if (cached != m_fontFallback->m_cache.end())
   {
@@ -2890,6 +2905,19 @@ wxPdfDocument::FindFallbackSlot(wxUint32 codePoint, const wxString& chr)
   if (!found.IsValid() && m_fontFallback->m_useSystemFonts)
   {
     found = fontManager->FindFallbackFont(codePoint, style);
+  }
+
+  if (found.IsValid() && embedAll)
+  {
+    // In embed-all-fonts mode (and for PDF/A) a fallback font must be embedded
+    // like any other font. If it can't be, the embeddable replacement is used,
+    // provided that it contains the character, too.
+    wxPdfFont embeddable = GetFontToEmbed(found, style);
+    if (embeddable.IsValid() && fontManager->InitializeFontData(embeddable) &&
+        wxPdfFontExtended(embeddable).CanShow(chr))
+    {
+      found = embeddable;
+    }
   }
 
   int slot = -1;

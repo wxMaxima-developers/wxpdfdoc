@@ -13,6 +13,7 @@ and from version 0.9.0 onwards this project adheres to [Semantic Versioning](htt
 - Added export of any `wxGrid` directly to PDF via `wxPdfDocument::AddGrid()` or `wxPdfDC::DrawGrid()`
 - Added `SetPageBreakHandler()` to `wxPdfListCtrlOptions` and `wxPdfGridOptions`, so that users can draw custom headers and footers on every page of an exported table
 - Added VC++ 2026 build support
+- Added `wxPdfDocument::SetEmbedAllFonts()` to embed all fonts used in a document: fonts with embedding disabled are embedded anyway, and fonts that can't be embedded are replaced by embeddable fonts defined via `wxPdfFontManager::SetEmbeddableFontReplacement()`. The 14 Adobe standard fonts are only replaced on request, except in PDF/A-1 documents, which use this mode implicitly: there Helvetica/Arial, Times and Courier are replaced automatically by installed metric-compatible free fonts (Liberation, Croscore, URW base 35, TeX Gyre, GNU FreeFont)
 - Added font fallback for characters missing in the current font (`wxPdfDocument::AddFallbackFont()`, `wxPdfDocument::SetSystemFontFallback()`, `wxPdfFontManager::FindFallbackFont()`). Disabled by default; output is unchanged unless enabled
 - Added automated tests (`make check`)
 

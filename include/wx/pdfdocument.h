@@ -62,6 +62,7 @@ class WXDLLIMPEXP_FWD_PDFDOC wxPdfFontDescription;
 class WXDLLIMPEXP_FWD_PDFDOC wxPdfFontDetails;
 class wxPdfFontFallback;
 struct wxPdfFontFallbackRun;
+class wxPdfEmbeddableFontCache;
 
 class WXDLLIMPEXP_FWD_PDFDOC wxPdfExtGState;
 class WXDLLIMPEXP_FWD_PDFDOC wxPdfGradient;
@@ -1490,6 +1491,48 @@ public:
   */
   virtual bool GetFontSubsetting() const { return m_fontSubsetting; }
 
+  /// Sets whether all fonts used in the document have to be embedded
+  /**
+  * By default TrueType, OpenType and Type1 fonts are embedded (unless embedding was
+  * disabled with wxPdfFont::SetEmbed() or wxPdfFontManager::SetDefaultEmbed()), while
+  * the 14 Adobe standard fonts and the Adobe CJK fonts are never embedded. A PDF viewer
+  * has to substitute fonts that are not embedded, so the document may look different
+  * on other systems, and archival formats like PDF/A forbid non-embedded fonts.
+  *
+  * If this mode is enabled, fonts selected afterwards are embedded:
+  * \li fonts which allow embedding are embedded even if embedding was disabled for them;
+  * \li the 14 Adobe standard fonts, which every PDF reader has to provide, are left
+  *     unchanged, unless a replacement was defined for them with
+  *     wxPdfFontManager::SetEmbeddableFontReplacement();
+  * \li other fonts which cannot be embedded (Adobe CJK fonts, fonts whose licence forbids
+  *     embedding) are replaced by the font defined with
+  *     wxPdfFontManager::SetEmbeddableFontReplacement().
+  *
+  * If no embeddable replacement can be found for such a font, the font is used without
+  * embedding and a warning is logged (once per font and document).
+  *
+  * This mode is implicitly enabled for documents conforming to PDF/A-1 (see SetPdfA1Conformance()).
+  * Since PDF/A forbids non-embedded fonts, standard fonts are replaced in PDF/A documents
+  * even without an explicit replacement: for Helvetica (alias Arial), Times and Courier
+  * installed metric-compatible free fonts like the Liberation fonts are used automatically
+  * (see wxPdfFontManager::GetEmbeddableFont()).
+  *
+  * \note Enable this mode before selecting the first font. Fonts selected while the mode
+  * was disabled keep their embedding state within the document.
+  *
+  * \param embedAllFonts flag whether all fonts should be embedded
+  * \see GetEmbedAllFonts(), wxPdfFontManager::GetEmbeddableFont()
+  */
+  virtual void SetEmbedAllFonts(bool embedAllFonts = true) { m_embedAllFonts = embedAllFonts; }
+
+  /// Returns whether all fonts used in the document have to be embedded
+  /**
+  * \return @c true if all fonts will be embedded, @c false otherwise
+  * \note This reflects the setting of SetEmbedAllFonts() only; PDF/A-1 conformance
+  * implies embedding of all fonts in any case.
+  */
+  virtual bool GetEmbedAllFonts() const { return m_embedAllFonts; }
+
   /// Imports a TrueType, TrueTypeUnicode or Type1 font and makes it available.
   /**
   * It is necessary to generate a font definition file first with the makefont utility.
@@ -1711,6 +1754,8 @@ public:
   *        or wxPdfFontManager::RegisterFont()
   * \return @c true if the font was added, @c false if the font is invalid
   * \note Font fallback is disabled by default.
+  * \note If all fonts have to be embedded (SetEmbedAllFonts(), PDF/A-1), the same
+  * rules apply to fallback fonts as to the current font.
   * \see ClearFallbackFonts(), SetSystemFontFallback()
   */
   virtual bool AddFallbackFont(const wxPdfFont& font);
@@ -3659,6 +3704,28 @@ protected:
   */
   virtual bool SelectFont(const wxPdfFont& font, int style, double size = 0, bool setFont = true);
 
+  /// Get the font to be used for a selected font, honouring the embed-all-fonts mode
+  /**
+  * If all fonts have to be embedded (see SetEmbedAllFonts()), this returns an embeddable
+  * version of the font or an embeddable replacement. If neither exists, a warning is
+  * logged once per font and the font itself is returned.
+  * \param font the selected font
+  * \param style the requested font style
+  * \return the font to be used in the document
+  */
+  wxPdfFont GetFontToEmbed(const wxPdfFont& font, int style);
+
+  /// Find an embeddable font for a family that is not registered (embed-all-fonts mode)
+  /**
+  * Used if a font family requested by name is not registered with the requested style,
+  * for example to select the bold style of a replacement font family that was located
+  * via the operating system. The result (including failure) is cached per document.
+  * \param family the requested font family
+  * \param style the requested font style
+  * \return the embeddable font, or an invalid font if none was found
+  */
+  wxPdfFont FindEmbeddableFont(const wxString& family, int style);
+
   /// Defines the size of the current font.
   /**
   * \param size The size (in points)
@@ -4077,6 +4144,8 @@ private:
   int                  m_fontStyle;           ///< current font style
   int                  m_decoration;          ///< font decoration flags
   bool                 m_fontSubsetting;      ///< flag whether to use font subsetting
+  bool                 m_embedAllFonts;       ///< flag whether all fonts have to be embedded
+  wxPdfEmbeddableFontCache* m_embeddableFontCache; ///< fonts resolved in embed-all-fonts mode
 
   wxPdfFontDetails*    m_currentFont;         ///< current font info
   wxPdfFontFallback*   m_fontFallback;        ///< font fallback configuration and cache
