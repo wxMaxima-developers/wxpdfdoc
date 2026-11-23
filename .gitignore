@@ -4,8 +4,5 @@ configure
 configure~
 Makefile.in
 
-# Test programs and results of "make check"
+# Test programs built by "make check"
 tests/testtagging
-tests/*.log
-tests/*.trs
-test-suite.log

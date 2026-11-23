@@ -385,9 +385,13 @@ endif
 noinst_PROGRAMS=
 CLEANFILES=
 
-# Automated tests, run by "make check"
+# Automated tests, built and run by "make check".
+# They are run by check-local instead of the TESTS variable, as the latter
+# requires automake's test-driver script, which isn't part of the repository.
 check_PROGRAMS = tests/testtagging
-TESTS = $(check_PROGRAMS)
+
+check-local: $(check_PROGRAMS)
+	./tests/testtagging$(EXEEXT)
 
 tests_testtagging_SOURCES = tests/testtagging.cpp
 tests_testtagging_LDADD = $(LDADD)
