@@ -3,3 +3,9 @@ autom4te.cache/
 configure
 configure~
 Makefile.in
+
+# Test programs and results of "make check"
+tests/testtagging
+tests/*.log
+tests/*.trs
+test-suite.log

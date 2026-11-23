@@ -270,6 +270,8 @@ lib@WXPDFDOC_LIBNAME@_la_SOURCES = \
     src/pdfpattern.cpp \
     src/pdfprint.cpp \
     src/pdfrijndael.cpp \
+    src/pdfstructure.cpp \
+    src/private_structure.h \
     src/pdftemplate.cpp \
     src/pdfutility.cpp \
     src/pdfxml.cpp \
@@ -339,6 +341,7 @@ includewx_HEADERS = \
     include/wx/pdfrijndael.h \
     include/wx/pdfshape.h \
     include/wx/pdfspotcolour.h \
+    include/wx/pdfstructure.h \
     include/wx/pdftemplate.h \
     include/wx/pdfutility.h \
     include/wx/pdfxml.h
@@ -381,6 +384,13 @@ endif
 
 noinst_PROGRAMS=
 CLEANFILES=
+
+# Automated tests, run by "make check"
+check_PROGRAMS = tests/testtagging
+TESTS = $(check_PROGRAMS)
+
+tests_testtagging_SOURCES = tests/testtagging.cpp
+tests_testtagging_LDADD = $(LDADD)
 
 if BUILD_SAMPLES
 # Samples (don't need to be installed).
