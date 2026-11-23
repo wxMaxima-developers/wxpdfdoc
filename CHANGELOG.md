@@ -13,6 +13,9 @@ and from version 0.9.0 onwards this project adheres to [Semantic Versioning](htt
 - Added export of any `wxGrid` directly to PDF via `wxPdfDocument::AddGrid()` or `wxPdfDC::DrawGrid()`
 - Added `SetPageBreakHandler()` to `wxPdfListCtrlOptions` and `wxPdfGridOptions`, so that users can draw custom headers and footers on every page of an exported table
 - Added VC++ 2026 build support
+- Added tagged PDF output for accessible documents: `SetTagged()`, `BeginTag()`/`EndTag()` with alternate text, replacement text (`/ActualText`), expansion, language and title (class `wxPdfTag`), `BeginFormula()`/`EndFormula()` with MathML embedded as associated file, `BeginArtifact()`/`EndArtifact()`; untagged content and page headers/footers are marked as artifacts automatically
+- Added `SetLanguage()` to set the natural language of the document
+- Added automated tests (`make check`) and a tagged PDF example to the minimal sample
 
 ## [1.4.0] - 2026-05-20
 

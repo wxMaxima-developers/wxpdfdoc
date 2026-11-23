@@ -46,6 +46,9 @@ jobs:
       run: |
         pwd
         ./samples/minimal/minimal -t -s ./samples/minimal -f ../../lib/fonts
+    - name: Unit tests
+      run: |
+        make check || (cat tests/*.log; exit 1)
     - name: Installing
       run: |
         sudo make install

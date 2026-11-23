@@ -418,6 +418,7 @@ samples_minimal_minimal_SOURCES = \
     samples/minimal/minimal.cpp \
     samples/minimal/protection.cpp \
     samples/minimal/rotation.cpp \
+    samples/minimal/tagging.cpp \
     samples/minimal/templates.cpp \
     samples/minimal/transformation.cpp \
     samples/minimal/transparency.cpp \
