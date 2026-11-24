@@ -33,6 +33,7 @@
 
 #include "wx/pdfdoc.h"
 #include "wx/pdffontmanager.h"
+#include "wx/pdfutility.h"
 
 #ifndef WXPDFDOC_TEST_FONTDIR
 #define WXPDFDOC_TEST_FONTDIR "../lib/fonts"
@@ -417,6 +418,20 @@ TestSystemFallback()
   CHECK(Contains(content, "/F2 12.00 Tf"));
 }
 
+// A slanted (oblique) wxFont is drawn with the italic face: wxWidgets
+// applications use wxFONTSTYLE_SLANT and wxFONTSTYLE_ITALIC alike, and a font
+// family usually has only one of the two faces.
+static void
+TestSlantedFontIsItalic()
+{
+  const wxFont upright(wxFontInfo(12).Family(wxFONTFAMILY_SWISS));
+  const wxFont italic(wxFontInfo(12).Family(wxFONTFAMILY_SWISS).Italic());
+  const wxFont slanted(wxFontInfo(12).Family(wxFONTFAMILY_SWISS).Slant());
+  CHECK((wxPdfUtility::MapFont2FontStyle(upright) & wxPDF_FONTSTYLE_ITALIC) == 0);
+  CHECK((wxPdfUtility::MapFont2FontStyle(italic) & wxPDF_FONTSTYLE_ITALIC) != 0);
+  CHECK((wxPdfUtility::MapFont2FontStyle(slanted) & wxPDF_FONTSTYLE_ITALIC) != 0);
+}
+
 // ----------------------------------------------------------------------------
 
 int
@@ -444,6 +459,7 @@ main(int argc, char** argv)
   TestTemplate();
   TestEmbedAllFonts();
   TestSystemFallback();
+  TestSlantedFontIsItalic();
 
   std::printf("%d checks, %d failures\n", gs_checks, gs_failures);
   return gs_failures;

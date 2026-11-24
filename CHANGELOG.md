@@ -16,6 +16,15 @@ and from version 0.9.0 onwards this project adheres to [Semantic Versioning](htt
 - Added `wxPdfDocument::SetEmbedAllFonts()` to embed all fonts used in a document: fonts with embedding disabled are embedded anyway, and fonts that can't be embedded are replaced by embeddable fonts defined via `wxPdfFontManager::SetEmbeddableFontReplacement()`. The 14 Adobe standard fonts are only replaced on request, except in PDF/A-1 documents, which use this mode implicitly: there Helvetica/Arial, Times and Courier are replaced automatically by installed metric-compatible free fonts (Liberation, Croscore, URW base 35, TeX Gyre, GNU FreeFont)
 - Added font fallback for characters missing in the current font (`wxPdfDocument::AddFallbackFont()`, `wxPdfDocument::SetSystemFontFallback()`, `wxPdfFontManager::FindFallbackFont()`). Disabled by default; output is unchanged unless enabled
 - Added automated tests (`make check`)
+- Added tagged PDF output for accessible documents: `SetTagged()`, `BeginTag()`/`EndTag()` with alternate text, replacement text (`/ActualText`), expansion, language and title (class `wxPdfTag`), `BeginFormula()`/`EndFormula()` with MathML embedded as associated file, `BeginArtifact()`/`EndArtifact()`; untagged content and page headers/footers are marked as artifacts automatically
+- Added `SetLanguage()` to set the natural language of the document
+- Added a tagged PDF example to the minimal sample
+- Added `wxPdfDC::SetFontResolution()`, so that the size of text in the PDF no longer depends on the resolution of the screen the program happens to run on (72 ppi on macOS, the display's on other platforms)
+
+### Fixed
+
+- A wxFont with style `wxFONTSTYLE_SLANT` is now drawn with the font's italic (or oblique) face instead of the upright one
+- The random number generator compiles on Cygwin, which has no `rand_s()`; it reads `/dev/urandom` there like other POSIX systems
 
 ## [1.4.0] - 2026-05-20
 

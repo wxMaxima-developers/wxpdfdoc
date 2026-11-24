@@ -48,6 +48,7 @@
 #include "wx/pdfutility.h"
 
 #include "pdffontfallback.h"
+#include "private_structure.h"
 
 //#include <vld.h>
 
@@ -299,6 +300,10 @@ wxPdfDocument::Initialize(int orientation)
 
   m_isPdfA1 = false;
 
+  m_tagging = NULL;
+  m_language = wxEmptyString;
+  m_structTreeRootObjId = 0;
+
   m_translate = false;
 
   m_zapfdingbats = 0;
@@ -306,6 +311,8 @@ wxPdfDocument::Initialize(int orientation)
 
 wxPdfDocument::~wxPdfDocument()
 {
+  delete m_tagging;
+
   wxPdfFontHashMap::iterator font = m_fonts->begin();
   for (font = m_fonts->begin(); font != m_fonts->end(); font++)
   {
@@ -744,11 +751,16 @@ wxPdfDocument::AddPage(int orientation, wxSize pageSize)
   {
     // Page footer
     m_inFooter = true;
+    TagPagination(true);
     Footer();
+    TagPagination(false);
     m_inFooter = false;
     // Close page
     EndPage();
   }
+
+  // In tagged documents the page set-up and the page header are artifacts
+  TagPagination(true);
 
   // Start new page
   BeginPage(orientation, pageSize);
@@ -817,6 +829,8 @@ wxPdfDocument::AddPage(int orientation, wxSize pageSize)
   }
   m_textColour = tc;
   m_colourFlag = cf;
+
+  TagPagination(false);
 }
 
 void
@@ -2484,7 +2498,9 @@ wxPdfDocument::Close()
 
   // Page footer
   m_inFooter = true;
+  TagPagination(true);
   Footer();
+  TagPagination(false);
   m_inFooter = false;
 
   // Close page
