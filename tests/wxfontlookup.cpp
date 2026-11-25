@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        wxfontlookup.cpp
 // Purpose:     Automated tests for mapping wxFont objects to PDF fonts
-//              (wxPdfFontManager::GetFont(const wxFont&), used by
+//              (wxPdfFontManager::GetFontForWxFont(const wxFont&), used by
 //              wxPdfDocument::SetFont(const wxFont&), wxPdfDC and
 //              wxPdfGraphicsContext)
 // Licence:     wxWindows licence
@@ -131,7 +131,7 @@ TestStandardFontFaceNameMapsToInstalledFont()
   // Precondition: by name, "Arial" is the standard font Helvetica
   CHECK(IsStandardFont(fm->GetFont(wxS("Arial"))));
 
-  wxPdfFont font = fm->GetFont(MakeFont(wxS("Arial")));
+  wxPdfFont font = fm->GetFontForWxFont(MakeFont(wxS("Arial")));
   CHECK(font.IsValid());
 #if defined(__WXGTK__)
   // Fontconfig always provides a font (for Arial usually Liberation Sans)
@@ -195,9 +195,9 @@ TestLookupIsCached()
     return;
   }
   wxPdfFontManager* fm = wxPdfFontManager::GetFontManager();
-  wxPdfFont first = fm->GetFont(MakeFont(wxS("Times")));
+  wxPdfFont first = fm->GetFontForWxFont(MakeFont(wxS("Times")));
   size_t count = fm->GetFontCount();
-  wxPdfFont second = fm->GetFont(MakeFont(wxS("Times")));
+  wxPdfFont second = fm->GetFontForWxFont(MakeFont(wxS("Times")));
   CHECK(first.GetName() == second.GetName());
   CHECK(fm->GetFontCount() == count);
 }
@@ -229,7 +229,7 @@ TestOtherFaceNamesAreUnchanged()
   }
   // A face name that isn't a standard font is registered under that name, as before
   wxPdfFontManager* fm = wxPdfFontManager::GetFontManager();
-  wxPdfFont font = fm->GetFont(MakeFont(wxS("DejaVu Sans")));
+  wxPdfFont font = fm->GetFontForWxFont(MakeFont(wxS("DejaVu Sans")));
   CHECK(font.IsValid());
   CHECK(!IsStandardFont(font));
   CHECK(fm->GetFont(wxS("DejaVu Sans")).IsValid());
@@ -238,7 +238,7 @@ TestOtherFaceNamesAreUnchanged()
 void
 TestInvalidFont()
 {
-  CHECK(!wxPdfFontManager::GetFontManager()->GetFont(wxFont()).IsValid());
+  CHECK(!wxPdfFontManager::GetFontManager()->GetFontForWxFont(wxFont()).IsValid());
 }
 
 } // anonymous namespace

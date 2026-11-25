@@ -744,7 +744,7 @@ wxPdfGraphicsFontData::wxPdfGraphicsFontData(wxGraphicsRenderer* renderer, const
   m_font = font;
   m_styles = wxPdfUtility::MapFontWeight2FontStyle(font.GetWeight());
   m_styles |= wxPdfUtility::MapFont2FontStyle(font);
-  m_regFont = wxPdfFontManager::GetFontManager()->GetFont(font);
+  m_regFont = wxPdfFontManager::GetFontManager()->GetFontForWxFont(font);
 }
 
 wxPdfGraphicsFontData::wxPdfGraphicsFontData(wxGraphicsRenderer* renderer,
@@ -770,7 +770,7 @@ wxPdfGraphicsFontData::wxPdfGraphicsFontData(wxGraphicsRenderer* renderer,
   m_font = font;
   m_styles = wxPdfUtility::MapFontWeight2FontStyle(font.GetWeight());
   m_styles |= wxPdfUtility::MapFont2FontStyle(font);
-  m_regFont = wxPdfFontManager::GetFontManager()->GetFont(font);
+  m_regFont = wxPdfFontManager::GetFontManager()->GetFontForWxFont(font);
 }
 
 wxPdfGraphicsFontData::~wxPdfGraphicsFontData()

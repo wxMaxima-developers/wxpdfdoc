@@ -214,8 +214,10 @@ public:
   * \param font the wxFont object
   * \return the matching font, or an invalid font if no font could be found
   * \note It's the user's responsibility to check the font object before further using it.
+  * \note This is not an overload of GetFont(): on wxMSW a wxFont can be constructed
+  * implicitly from a wxString, which made a call like GetFont(family) ambiguous.
   */
-  wxPdfFont GetFont(const wxFont& font);
+  wxPdfFont GetFontForWxFont(const wxFont& font);
 
   /// Get a font by index
   /**

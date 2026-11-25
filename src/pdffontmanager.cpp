@@ -342,7 +342,7 @@ public:
 
   wxPdfFont GetFont(size_t fontIndex) const;
 
-  wxPdfFont GetFont(const wxFont& font);
+  wxPdfFont GetFontForWxFont(const wxFont& font);
 
   size_t GetFontCount() const;
 
@@ -1527,7 +1527,7 @@ wxPdfFontManagerBase::GetFont(const wxString& fontName, const wxString& fontStyl
 }
 
 wxPdfFont
-wxPdfFontManagerBase::GetFont(const wxFont& font)
+wxPdfFontManagerBase::GetFontForWxFont(const wxFont& font)
 {
   if (!font.IsOk())
   {
@@ -2457,9 +2457,9 @@ wxPdfFontManager::GetFont(size_t fontIndex) const
 }
 
 wxPdfFont
-wxPdfFontManager::GetFont(const wxFont& font)
+wxPdfFontManager::GetFontForWxFont(const wxFont& font)
 {
-  return m_fontManagerBase->GetFont(font);
+  return m_fontManagerBase->GetFontForWxFont(font);
 }
 
 wxPdfFont
